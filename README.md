@@ -1,8 +1,52 @@
 # Earth Upgrade & Rescue
 
-Offline-first install & recovery **planner/verifier** for the personally owned
-Redmi 12C (`earth`, MediaTek MT6768/MT6769). It prepares and proves a LineageOS
+Offline-first install & recovery **planner/verifier** for the Xiaomi Redmi 12C
+(`earth`, MediaTek MT6768/MT6769 / Helio G85). It prepares and proves a LineageOS
 24.0 install to the inactive A/B slot while preserving the LK-only unlock.
+
+> ## ⚠️ EXPERIMENTAL — not validated for general use
+>
+> This is a research/planning tool. Its installation and recovery functionality
+> is **experimental and unproven on real hardware**. It is **not** safe,
+> validated, or production-ready, and must not be treated as such. A passing
+> offline run does **not** mean any install is safe to perform. Flashing a
+> MediaTek device incorrectly can **permanently brick it**. Use at your own risk;
+> the MIT license disclaims all warranty. See
+> [`REMAINING_BEFORE_REAL_VALIDATION.md`](REMAINING_BEFORE_REAL_VALIDATION.md)
+> for the substantive blockers that remain before any real-world use.
+
+## What this is (and is not)
+
+- **Is:** an offline planner/verifier. It hashes images, checks device and
+  partition compatibility, confirms firmware-backup preservation, builds a
+  dry-run install plan, simulates block-device writes (interruption + boundary
+  handling), and plans rollback — producing a readiness report.
+- **Is not:** a flasher. It never contacts, flashes, or reboots a phone, and it
+  was authored for one specific personally owned unit. The device profile and
+  observed state are **recorded evidence / test fixtures**, not live readings.
+
+## The device
+
+`earth` is the LineageOS codename shared by the Redmi 12C, Redmi 12C NFC, and
+POCO C55 (MediaTek Helio G85, A/B virtual-A/B, dynamic `super` partition). The
+profile here models one global Redmi 12C unit.
+
+## Prerequisites
+
+- Python 3 (standard library only; no dependencies, no network).
+- To run `verify-images`/`preserve-check` meaningfully you must supply your own
+  local copies of the referenced artifacts (LineageOS OTA, stock ROM images,
+  firmware backups) at the paths in `config/*.json`; **none of those binaries
+  are included in this repository** (by design — see Third-party artifacts).
+  Without them, those checks honestly report `missing`.
+
+## Current capabilities / limitations
+
+Capabilities are the `Commands` below, all **offline**. Known limitations:
+real AVB/signature trust is **not** established (hashes only); live partition
+geometry is assumed, not read; the simulator models block writes, not AVB,
+dm-verity, or boot-control; device operations are only *described*, never
+executed. Full list in `REMAINING_BEFORE_REAL_VALIDATION.md`.
 
 ## This tool performs NO phone operations
 
@@ -64,3 +108,16 @@ Layered package (`earthinstall/`): `safety` (sandbox invariants) → `config`
 Reuses completed project work rather than re-deriving it: OTA partition hashes
 from the earlier offline payload parse, stock rollback hashes from the verified
 stock ROM, LK/preloader/seccfg backups from the BROM capture.
+
+## License and third-party artifacts
+
+The code, tests, configuration, and documentation in this repository are
+original work, licensed under [MIT](LICENSE) (© 2026 tavq7). The repository
+ships **no third-party code and no firmware**:
+
+- It contains only **SHA-256 hashes and metadata** describing LineageOS and
+  Xiaomi stock images — facts about those files, not the files themselves.
+- **LineageOS** images are distributed by the LineageOS project (predominantly
+  Apache-2.0, with other licenses per component); **Xiaomi stock firmware** is
+  proprietary. Neither is redistributed here. If you supply those artifacts
+  locally, their own licenses govern them — not this repository's MIT license.
