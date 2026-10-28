@@ -1,8 +1,15 @@
 # Earth Upgrade & Rescue
 
 Offline-first install & recovery **planner/verifier** for the Xiaomi Redmi 12C
-(`earth`, MediaTek MT6768/MT6769 / Helio G85). It prepares and proves a LineageOS
-24.0 install to the inactive A/B slot while preserving the LK-only unlock.
+(`earth`, MediaTek MT6768/MT6769 / Helio G85). It plans and checks a LineageOS
+**24.0 upgrade** to the inactive A/B slot.
+
+**Observed state:** LineageOS **23.2 booted on slot B** (operator-confirmed). The
+**24.0 upgrade is unvalidated** — not yet installed or booted. The recorded
+`active_slot=a` in the profile is only a test **fixture**; the tool refuses to
+use it as evidence of the running slot and will not call any plan device-ready
+without fresh, explicitly-sourced slot evidence (and even then the shared-`super`
+and signature blockers below remain).
 
 > ## ⚠️ EXPERIMENTAL — not validated for general use
 >
@@ -44,9 +51,13 @@ profile here models one global Redmi 12C unit.
 
 Capabilities are the `Commands` below, all **offline**. Known limitations:
 real AVB/signature trust is **not** established (hashes only); live partition
-geometry is assumed, not read; the simulator models block writes, not AVB,
-dm-verity, or boot-control; device operations are only *described*, never
-executed. Full list in `REMAINING_BEFORE_REAL_VALIDATION.md`.
+geometry is assumed, not read; `super` is one **shared physical partition**, so a
+raw rewrite is **not proven** to preserve the other slot's logical data (the
+simulator marks this *blocked*); the stored LK backups are **stock** dumps and do
+**not** back up the patched-unlock lk on slot b; the simulator models block
+writes, not AVB/dm-verity/boot-control; device operations are only *described*,
+never executed; the `all` command never exits with an installation-ready verdict.
+Full list in `REMAINING_BEFORE_REAL_VALIDATION.md`.
 
 ## This tool performs NO phone operations
 

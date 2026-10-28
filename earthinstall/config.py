@@ -42,6 +42,37 @@ class Profile:
     def active_slot(self) -> str:
         return self.observed_state["active_slot"]
 
+    @property
+    def active_slot_is_fixture(self) -> bool:
+        return bool(self.observed_state.get("active_slot_is_fixture"))
+
+    def resolve_running_slot(self, fresh_active_slot: str | None = None,
+                             fresh_source: str | None = None) -> dict:
+        """Decide which slot is the running/active one, and how trustworthy that is.
+
+        Priority: explicit fresh evidence > last_confirmed_running record > fixture.
+        Returns {slot, source, is_fresh, is_fixture}. Fixture is never treated as
+        fresh device evidence.
+        """
+        if fresh_active_slot:
+            return {"slot": fresh_active_slot,
+                    "source": fresh_source or "caller-supplied fresh slot evidence",
+                    "is_fresh": True, "is_fixture": False}
+        lcr = self.observed_state.get("last_confirmed_running")
+        if lcr and lcr.get("slot"):
+            return {"slot": lcr["slot"], "source": lcr.get("source", "last_confirmed_running"),
+                    "is_fresh": False, "is_fixture": bool(lcr.get("is_fixture"))}
+        return {"slot": self.active_slot, "source": "fixture (active_slot)",
+                "is_fresh": False, "is_fixture": self.active_slot_is_fixture}
+
+    @property
+    def super_shared(self) -> bool:
+        return bool(self.partitions["super"].get("physical_super_shared"))
+
+    @property
+    def super_preserves_other_slot(self) -> str:
+        return self.partitions["super"].get("raw_rewrite_preserves_other_slot", "unproven")
+
     def physical(self) -> list[dict]:
         return list(self.partitions["physical"])
 

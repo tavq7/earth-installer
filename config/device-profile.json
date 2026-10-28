@@ -15,10 +15,18 @@
   "observed_state": {
     "active_slot": "a",
     "active_slot_is_fixture": true,
-    "note": "OFFLINE TEST FIXTURE, not a verified current device state. The LAST OBSERVED running slot was B (CLAUDE.md L31). active_slot is set to 'a' here only to model the documented post-incomplete-install fallback (CLAUDE.md L327) so the simulation can prove the install never writes the running slot. The real active slot MUST be re-read from the device (read-only) before any write; do not treat this value as ground truth.",
-    "unlock": "LK-only (patched lk_b); does NOT extend into userspace fastbootd",
+    "fixture_note": "active_slot='a' is an OFFLINE TEST FIXTURE, not current device evidence. It exists only to exercise the simulation. It MUST NOT be used to decide device-readiness or which slot is safe to write. The tool refuses to treat it as the running slot.",
+    "last_confirmed_running": {
+      "system": "LineageOS 23.2",
+      "slot": "b",
+      "source": "operator-reported observation (2026-10-28); prior logs also show slot b as the last successful slot (CLAUDE.md L31)",
+      "is_fixture": false,
+      "note": "This is the last CONFIRMED running system. It is still NOT a fresh live reading at plan time. A real plan requires freshly re-read slot/unlock state (pass --fresh-active-slot with a source), not this record alone."
+    },
+    "fresh_slot_evidence": null,
+    "unlock": "LK-only via a PATCHED lk on slot b; does NOT extend into userspace fastbootd. See protected_backups.lk_unlock_caveat: the patched-unlock lk is NOT among the stored backups.",
     "anti_rollback_index": 1,
-    "evidence": "CLAUDE.md L31/L158/L327-L330"
+    "evidence": "CLAUDE.md L31/L158/L327-L330; operator report 2026-10-28"
   },
   "install_target": {
     "slot": "b",
@@ -56,19 +64,24 @@
       "groups": ["main_a", "main_b"],
       "logical_partitions": ["system", "vendor", "product", "system_ext"],
       "approx_size_bytes": 7516192768,
+      "physical_super_shared": true,
+      "shared_note": "There is ONE physical super partition shared by both slots. main_a and main_b are logical groups INSIDE it, not separate physical partitions. A raw rewrite of super replaces the entire physical partition, so it rewrites the other slot's logical group too.",
+      "raw_rewrite_preserves_other_slot": "unproven",
+      "raw_rewrite_evidence": "CLAUDE.md L328: the rebuilt super is slot-b-only ('overwrites super; stock-A OS can't be preserved in-super; restore via stock super rollback ROM'). No evidence the rebuilt image carries the running slot's logical group, so a raw-super rewrite is NOT proven to preserve the running slot.",
       "evidence": "CLAUDE.md L328 (single raw 7.0GiB VAB, metadata-slots 3, groups main_a/main_b)"
     }
   },
   "protected_backups": {
     "description": "These offline backups must exist and match before any plan is accepted. The tool never writes to them.",
+    "lk_unlock_caveat": "These lk backups are the ORIGINAL STOCK LK dumps captured via BROM on 2026-10-11. They do NOT include the PATCHED lk that provides the LK-only unlock on slot b. Verifying these confirms we can restore stock LK (anti-brick), but it does NOT establish that the patched-unlock lk is backed up or preserved. If slot b's patched lk is lost, the current unlock is lost (and must be re-derived). The patched lk images live outside this backup set and are not verified here.",
     "entries": [
-      {"role": "lk_slot_a", "path": "../../../preservation/brom-20261011-212422/lk_a.img",
+      {"role": "lk_slot_a", "content": "stock lk dump (slot a)", "path": "../../../preservation/brom-20261011-212422/lk_a.img",
         "sha256": "b809cac5d001843d23e3e90e497c5abfa9c1d9ce6900a9578ae3880045da2fa7"},
-      {"role": "lk_slot_b", "path": "../../../preservation/brom-20261011-212422/lk_b.img",
+      {"role": "lk_slot_b", "content": "stock lk dump (slot b) — NOT the patched-unlock lk", "path": "../../../preservation/brom-20261011-212422/lk_b.img",
         "sha256": "c9d4bfb4df509312234e4950aa4aea22df33b3728c3fa57f0818c43d053c906a"},
-      {"role": "preloader_boot1", "path": "../../../logs/preloader-dump/preloader_boot1.bin",
+      {"role": "preloader_boot1", "content": "preloader (boot1) dump", "path": "../../../logs/preloader-dump/preloader_boot1.bin",
         "sha256": "c27d3be32f62a322c2d7e261a8d2df74f6e06a474cd748dc5a589b45fd1da73a"},
-      {"role": "seccfg", "path": "../../../preservation/brom-20261011-212422/seccfg.img",
+      {"role": "seccfg", "content": "seccfg dump", "path": "../../../preservation/brom-20261011-212422/seccfg.img",
         "sha256": "a679801cb3c0830f7c392db78d5741c63bbbc876b7862474a3482ac34c4671c1"}
     ]
   }

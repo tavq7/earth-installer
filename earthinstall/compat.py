@@ -5,9 +5,12 @@ from __future__ import annotations
 from .config import Profile
 
 
-def check_device(profile: Profile, catalog: dict) -> dict:
+def check_device(profile: Profile, catalog: dict,
+                 fresh_active_slot: str | None = None,
+                 fresh_source: str | None = None) -> dict:
     """Validate the install candidate is for this device and slot model."""
     checks: list[dict] = []
+    running = profile.resolve_running_slot(fresh_active_slot, fresh_source)
 
     def add(name: str, ok: bool, detail: str):
         checks.append({"check": name, "pass": bool(ok), "detail": detail})
@@ -31,10 +34,14 @@ def check_device(profile: Profile, catalog: dict) -> dict:
     add("sdk-level-known", isinstance(sdk, int) and sdk > 0,
         f"post_sdk_level={sdk}")
 
-    add("target-slot-is-inactive",
-        profile.target_slot != profile.active_slot,
-        f"install targets slot {profile.target_slot!r}; active slot is "
-        f"{profile.active_slot!r} (must differ so the active OS stays bootable)")
+    # Inactive-slot check must rest on trustworthy evidence. A fixture is never
+    # sufficient, and target must differ from the resolved running slot.
+    inactive_ok = (not running["is_fixture"]
+                   and profile.target_slot != running["slot"])
+    add("target-slot-is-inactive", inactive_ok,
+        f"install targets slot {profile.target_slot!r}; running slot is "
+        f"{running['slot']!r} (source: {running['source']}; fresh={running['is_fresh']}, "
+        f"fixture={running['is_fixture']}). Must differ, and evidence must not be a fixture.")
 
     ok = all(c["pass"] for c in checks)
     return {"component": "device-compat", "pass": ok, "checks": checks}

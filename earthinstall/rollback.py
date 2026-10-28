@@ -8,10 +8,12 @@ from .config import Profile
 def build_rollback(profile: Profile, catalog: dict) -> dict:
     rb = catalog.get("rollback_images", {})
     target = profile.target_slot
-    active = profile.active_slot
+    # Safety net is the resolved running slot (left untouched by the install),
+    # NOT the fixture active_slot.
+    active = profile.resolve_running_slot()["slot"]
 
-    # Primary recovery: the active slot was never touched, so the first recovery
-    # is simply to leave slot b and keep booting the untouched active slot.
+    # Primary recovery: the running slot was never touched, so the first recovery
+    # is simply to keep booting it and set-active back to it if it was changed.
     recovery_tiers = [
         {"tier": 0, "name": "no-op / abort",
          "trigger": "install not yet set-active, or new slot fails first boot",
@@ -60,7 +62,10 @@ def build_rollback(profile: Profile, catalog: dict) -> dict:
     uncovered = [c["written_partition"] for c in coverage if not c["covered"]]
     return {
         "component": "rollback-plan",
-        "pass": True,  # a plan always produced; coverage gaps are reported, not failures
+        # Incomplete rollback coverage is a blocking condition, not success.
+        "pass": not uncovered,
+        "coverage_complete": not uncovered,
+        "unresolved": bool(uncovered),
         "active_slot_is_safety_net": active,
         "target_slot": target,
         "recovery_tiers": recovery_tiers,

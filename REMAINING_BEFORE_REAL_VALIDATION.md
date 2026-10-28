@@ -1,10 +1,14 @@
 # What remains before real-world validation
 
-The offline tool in this directory passes its full offline gate (image hashes,
-device/partition compatibility, LK+preloader preservation, dry-run plan,
-block-device simulation, rollback plan). That result is necessary but **not
-sufficient** to install on the phone. Everything below is still open and cannot
-be closed offline. Nothing here should be read as clearance to flash.
+The offline tool validates its own planning model (Tier 1). It does **not** and
+**cannot** assert installation readiness: the `all` command never exits with a
+ready verdict, and the report marks real-world readiness **NOT ESTABLISHED**.
+Everything below is open and cannot be closed offline. Nothing here is clearance
+to flash.
+
+**Observed vs target.** LineageOS **23.2 booted on slot B** (operator-confirmed).
+The **24.0 upgrade is unvalidated** — not installed, not booted. The profile's
+`active_slot=a` is a **fixture only** and is never used as running-slot evidence.
 
 ## 1. Cryptographic trust is not established
 The tool checks that images match recorded SHA-256 values. It does **not** verify
@@ -13,17 +17,29 @@ descriptors against a trusted key. `custom-build/verification.json` already
 records this as the open gate ("CUSTOM OTA BLOCKED ON ACCEPTED SIGNING PATH").
 Hash equality only proves the bytes are the ones we previously saw.
 
-## 2. The central unknown is unchanged: AVB orange-state boot under the LK-only unlock
-The install targets slot `b`, which carries the patched LK (LK-only unlock). It
-is still unproven on this unit that a LineageOS slot-b boot/super passes
-verified-boot in that state and actually boots. This is an **on-device** test
-(`PLAN_Y3_RESEARCH.md` names it as the one remaining unknown). The simulation
-models block writes and interruption; it does not model AVB, dm-verity, or the
-boot-control hand-off. Note also that the profile's `active_slot: a` is an
-**offline test fixture**, not a verified current device state — the last observed
-running slot was **B**. The real active/current slot must be re-read from the
-device (read-only) before any write; the simulation uses `a` only to model the
-documented fallback so it can prove the running slot is never written.
+## 2. Fresh slot evidence is required; target must not equal the running slot
+The 24.0 plan targets slot `b`, but slot `b` is the last confirmed running slot
+(23.2). Targeting the running slot is refused. A real plan needs the current slot
+**freshly re-read on-device** (`--fresh-active-slot` with a source), and the
+target must be the inactive slot. Until then `device_ready=False`. Fixture data
+(`active_slot=a`) is never accepted as evidence.
+
+## 2a. AVB orange-state boot of the 24.0 upgrade
+Even with the slot resolved, it is unproven that a LineageOS 24.0 slot image
+passes verified-boot under the LK-only unlock and boots. On-device test only; the
+simulator models block writes/interruption, not AVB, dm-verity, or boot-control.
+
+## 2b. `super` is one shared physical partition — preservation unproven
+`super` is a single physical partition; `main_a`/`main_b` are logical groups
+inside it. A raw-super rewrite replaces the whole partition, so it overwrites the
+other slot's logical data unless the rebuilt image provably carries that slot's
+group. Earlier work rebuilt a **slot-b-only** super, so preservation of the other
+slot is **unproven** — the simulator marks this scenario *blocked*, not passed.
+
+## 2c. The patched-unlock lk is NOT backed up
+`preserve-check` verifies the **stock** LK dumps (anti-brick restore) only. The
+**patched** lk that provides the slot-b LK-only unlock is not in the backup set,
+so its preservation is not established. Losing it loses the current unlock.
 
 ## 3. Real partition geometry is assumed, not read
 `device-profile.json` uses representative partition sizes and the documented
@@ -41,10 +57,12 @@ before relying on it.
 ## 5. Partitions without a stock rollback image
 `md1img`, `tee`, `scp`, `sspm`, `spmfw`, `gz`, `logo` are written by the OTA but
 have no stock rollback image on hand in the catalog (modem/TEE/firmware live in
-the stock ROM's own images, intentionally excluded to preserve unlock). The
-first-line safety net remains the untouched active slot `a`. If a firmware-layer
-partition is ever disturbed, recovery depends on the BROM backups + stock ROM,
-which is a heavier, physical-access path. Decide per-partition rollback before
+the stock ROM's own images, intentionally excluded to preserve unlock). This
+incomplete coverage is reported as a **blocking / unresolved** condition
+(`rollback-plan` fails), not success. The first-line safety net is the untouched
+**running slot** (left alone because the install targets the inactive slot). If a
+firmware-layer partition is ever disturbed, recovery depends on the BROM backups +
+stock ROM, a heavier physical-access path. Decide per-partition rollback before
 writing any of these.
 
 ## 6. Device operations are only described
