@@ -1,0 +1,5 @@
+# Generated offline outputs (regenerate with: python3 run.py all)
+out/
+# Python bytecode
+__pycache__/
+*.pyc

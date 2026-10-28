@@ -1,0 +1,75 @@
+{
+  "schema": "earth-installer/device-profile/1",
+  "device": {
+    "codename": "earth",
+    "model": "Redmi 12C",
+    "soc_family": "MediaTek MT6768/MT6769",
+    "hwcode": "0x707",
+    "storage": "emmc",
+    "storage_size_bytes": 125069950976,
+    "block_size": 4096,
+    "slotting": "A/B (virtual A/B)",
+    "slots": ["a", "b"],
+    "evidence": "redmi-recovery/.state, hwparam.json, CLAUDE.md L31/L328"
+  },
+  "observed_state": {
+    "active_slot": "a",
+    "active_slot_is_fixture": true,
+    "note": "OFFLINE TEST FIXTURE, not a verified current device state. The LAST OBSERVED running slot was B (CLAUDE.md L31). active_slot is set to 'a' here only to model the documented post-incomplete-install fallback (CLAUDE.md L327) so the simulation can prove the install never writes the running slot. The real active slot MUST be re-read from the device (read-only) before any write; do not treat this value as ground truth.",
+    "unlock": "LK-only (patched lk_b); does NOT extend into userspace fastbootd",
+    "anti_rollback_index": 1,
+    "evidence": "CLAUDE.md L31/L158/L327-L330"
+  },
+  "install_target": {
+    "slot": "b",
+    "rationale": "Install to the inactive slot b, which carries the unlock-preserving patched lk. Never touch active slot a until the new slot boots.",
+    "set_active_required": true,
+    "set_active_is_device_op": true
+  },
+  "partitions": {
+    "block_size": 4096,
+    "physical": [
+      {"name": "boot",           "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "dtbo",           "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "vbmeta",         "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "vbmeta_system",  "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "vbmeta_vendor",  "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "md1img",         "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "scp",            "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "sspm",           "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "spmfw",          "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "gz",             "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "tee",            "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "logo",           "ab": true,  "ota_written": true,  "protected": false},
+      {"name": "lk",             "ab": true,  "ota_written": false, "protected": true,
+        "protect_reason": "Holds the LK-only unlock on slot b. Lineage OTA excludes lk (verification.json included=false). Writing it would re-lock the device."},
+      {"name": "preloader",      "ab": true,  "ota_written": false, "protected": true,
+        "protect_reason": "preloader_raw excluded by Lineage OTA (verification.json included=false). Preserve both copies; a bad preloader hard-bricks below BROM recovery guarantees."}
+    ],
+    "super": {
+      "name": "super",
+      "type": "dynamic (virtual A/B, raw)",
+      "ab": true,
+      "ota_written": true,
+      "protected": false,
+      "metadata_slots": 3,
+      "groups": ["main_a", "main_b"],
+      "logical_partitions": ["system", "vendor", "product", "system_ext"],
+      "approx_size_bytes": 7516192768,
+      "evidence": "CLAUDE.md L328 (single raw 7.0GiB VAB, metadata-slots 3, groups main_a/main_b)"
+    }
+  },
+  "protected_backups": {
+    "description": "These offline backups must exist and match before any plan is accepted. The tool never writes to them.",
+    "entries": [
+      {"role": "lk_slot_a", "path": "../../../preservation/brom-20261011-212422/lk_a.img",
+        "sha256": "b809cac5d001843d23e3e90e497c5abfa9c1d9ce6900a9578ae3880045da2fa7"},
+      {"role": "lk_slot_b", "path": "../../../preservation/brom-20261011-212422/lk_b.img",
+        "sha256": "c9d4bfb4df509312234e4950aa4aea22df33b3728c3fa57f0818c43d053c906a"},
+      {"role": "preloader_boot1", "path": "../../../logs/preloader-dump/preloader_boot1.bin",
+        "sha256": "c27d3be32f62a322c2d7e261a8d2df74f6e06a474cd748dc5a589b45fd1da73a"},
+      {"role": "seccfg", "path": "../../../preservation/brom-20261011-212422/seccfg.img",
+        "sha256": "a679801cb3c0830f7c392db78d5741c63bbbc876b7862474a3482ac34c4671c1"}
+    ]
+  }
+}

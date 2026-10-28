@@ -1,0 +1,53 @@
+{
+  "schema": "earth-installer/known-images/1",
+  "note": "Verified-image catalog for earth. Hashes transcribed from existing project evidence (builds.json, upgrade-24/custom-build/verification.json, STOCK_ROLLBACK_MANIFEST.md). The tool hashes files on disk and compares to these. It never downloads.",
+  "sources": {
+    "builds_json": "upgrade-24/builds.json",
+    "ota_payload_verification": "upgrade-24/custom-build/verification.json",
+    "stock_rollback": "redmi-recovery/STOCK_ROLLBACK_MANIFEST.md"
+  },
+  "install_candidate": {
+    "name": "lineage-24.0-20261025-nightly-earth-signed.zip",
+    "role": "LineageOS 24.0 install OTA (A/B payload.bin)",
+    "sha256": "5da78d74a85edf16e55a37f4f0dac96f72dc678fdd53d17736d97e14918820d6",
+    "size": 1092152720,
+    "path": "../../lineage-24.0-20261025-nightly-earth-signed.zip",
+    "post_build": "Redmi/earth_global/earth:14/UP1A.231005.007/V816.0.16.0.UCVMIXM:user/release-keys",
+    "post_sdk_level": 37,
+    "post_security_patch_level": "2026-10-01",
+    "ota_type": "AB",
+    "block_size": 4096
+  },
+  "ota_payload_partitions": [
+    {"name": "boot",          "size": 67108864,   "sha256": "39bf022be39a8e12f424ef9871a8d050980f95081518c68179869e55493fb682", "included": true},
+    {"name": "dtbo",          "size": 8388608,    "sha256": "eb505099d6e9728b0dcbd8c3387127c9bee7dd530cd76a04c58633569fa0323b", "included": true},
+    {"name": "gz",            "size": 2830336,    "sha256": "34a24819d2ca9ce25d27b1503793348ff2bc1c5c6f6fa51845dac637982dc1c6", "included": true},
+    {"name": "lk",            "size": 1642496,    "sha256": "032802ce5b0b8b331d029c4768bc060192f42af305c574f61578a8dfd0925a2f", "included": false},
+    {"name": "logo",          "size": 331776,     "sha256": "2be590a57b690015ca9a17727c0e60206dd65c4346b666da7b0da18e990a33c8", "included": true},
+    {"name": "md1img",        "size": 63758336,   "sha256": "eda4da3dd8b037d0eb6244c40eaf9d312d50305f2dd5c8d0c1a1666b045e4490", "included": true},
+    {"name": "preloader_raw", "size": 311296,     "sha256": "2bdd98add4ce34fb89d2dd15f0ce6cb3b128988c41244006ed3403872cda680d", "included": false},
+    {"name": "product",       "size": 1747996672, "sha256": "6d06532e86fd35a9efabc697b65e194a06f8233c787be1141a8b77910c4cc338", "included": true},
+    {"name": "scp",           "size": 630784,     "sha256": "ff91c5e367202996c494922be39e7deb195ad410ddbc3a4e94148dbc3f3acb1b", "included": true},
+    {"name": "spmfw",         "size": 53248,      "sha256": "9f09df7b348de86a2518104c653eb15312588e16a1b85d9effb6ad7ffd42e370", "included": true},
+    {"name": "sspm",          "size": 507904,     "sha256": "289cc34171764f8805daf4071aee008bb04b7118f3ada69d0b5adf50be606f7b", "included": true},
+    {"name": "system",        "size": 1203187712, "sha256": "dfb9620e28c734a7ffa6b93fa3fb6bd7103088b82bf23eb518ae21ade0f58f5f", "included": true},
+    {"name": "system_ext",    "size": 584273920,  "sha256": "c53abbdb9a4f9c1022088ce5f7012933e20746df9d5d90a464b25f5d4addc3a6", "included": true},
+    {"name": "tee",           "size": 2560000,    "sha256": "28e9e453c69e1b86068c1b3ac3852bf239f9c5c3d0b281dffe2f0ae1bb5feaa6", "included": true},
+    {"name": "vbmeta",        "size": 4096,       "sha256": "2cb07dbd386fb5135ebdcf592f141257f81cbfc371df71c79b85c865dfbe8faa", "included": true},
+    {"name": "vbmeta_system", "size": 4096,       "sha256": "f4ff5d95a3a86b3102a99886fad8bf9f8d11408a0552f3e8420e34cf9338f777", "included": true},
+    {"name": "vbmeta_vendor", "size": 4096,       "sha256": "211736c2d03dc88637dca9dc105faff889eff0b23f5196baf32c1b35bb598d6e", "included": true},
+    {"name": "vendor",        "size": 220520448,  "sha256": "c733ec5e5b9b9f77326c68c2f6324ddffbf3cf2bb249ddc9adf2bbf13fa9ddd7", "included": true}
+  ],
+  "rollback_images": {
+    "note": "Stock earth HyperOS OS1.0.16.0.UCVMIXM fastboot ROM (verified, STOCK_ROLLBACK_MANIFEST.md). For return-to-stock. Firmware (lk/preloader) intentionally NOT used (preserve unlock).",
+    "root": "../../../images/stock-earth-OS1.0.16.0.UCVMIXM/extracted/earth_global_images_OS1.0.16.0.UCVMIXM_14.0/images",
+    "entries": [
+      {"name": "boot",          "file": "boot.img",          "size": 67108864,   "sha256": "a665cdef6fa6860b1788b53bc94013bb6a4e47cdb08fe983972066cba9ea1360"},
+      {"name": "dtbo",          "file": "dtbo.img",          "size": 76368,      "sha256": "c470523b2d38134a295aa4ff09bcd8faa12638116aa324c99f4c0cec1538ad9d"},
+      {"name": "vbmeta",        "file": "vbmeta.img",        "size": 4096,       "sha256": "7a67f923ba8443f74730a5badb9bd8bf5d2751be1411c03df458c91c7c605935"},
+      {"name": "vbmeta_system", "file": "vbmeta_system.img", "size": 4096,       "sha256": "e7fa715046513841eb2784c677793bd0006d643a8b96b4e7d8bde1de0e76e4d2"},
+      {"name": "vbmeta_vendor", "file": "vbmeta_vendor.img", "size": 4096,       "sha256": "1594e1716f3535de40f634a261811ad9911640355e5374d3b8da53e020156d5f"},
+      {"name": "super",         "file": "super.img",         "size": 5511660868, "sha256": "443b64dbf6550ca54d9ddb613cfa6477a75cc3860ba179df76fdce12731b87cb", "format": "android-sparse"}
+    ]
+  }
+}
